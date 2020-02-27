@@ -39,6 +39,14 @@ func (pc *printerContext) Update(max, current int64) *printerContext {
 	pc.width = pc.bar.GetWidth()
 	pc.max = max
 	pc.current = current
+
+	pc.countersBox = ""
+	pc.timeSpentBox = ""
+	pc.speedBox = ""
+	pc.barBox = ""
+	pc.percentBox = ""
+	pc.timeLeftBox = ""
+
 	return pc
 
 }
@@ -55,7 +63,6 @@ func (pc *printerContext) Feed() string {
 	pc.feedBar()
 	pc.feedEnd()
 
-	pc.bar.last = pc.String()
 	return pc.String()
 }
 
@@ -73,7 +80,7 @@ func (pc *printerContext) feedCounters() {
 	select {
 	case <-pc.bar.finish:
 		left = (fromStart / time.Second) * time.Second
-		pc.timeLeftBox = fmt.Sprintf(" %s", left.String())
+		pc.timeSpentBox = fmt.Sprintf(" %s", left.String())
 	default:
 		if pc.bar.ShowElapsedTime {
 			pc.timeSpentBox = fmt.Sprintf(" %s", (fromStart/time.Second)*time.Second)
