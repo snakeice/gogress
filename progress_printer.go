@@ -136,7 +136,7 @@ func (pc *printerContext) getBarSize() int {
 }
 
 func (pc *printerContext) format() *format.ProgressFormat {
-	return pc.bar.Format
+	return &pc.bar.Format
 }
 
 func (pc *printerContext) feedBar() {
@@ -188,8 +188,8 @@ func (pc *printerContext) feedBar() {
 
 func (pc *printerContext) feedEnd() {
 	pc.out = pc.bar.messagePrefix +
-		pc.countersBox +
 		pc.barBox +
+		pc.countersBox +
 		pc.percentBox +
 		pc.speedBox +
 		pc.timeSpentBox +

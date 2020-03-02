@@ -21,6 +21,14 @@
       "program": "${workspaceFolder}/sample/simple/progress_sample.go",
       "env": {},
       "args": []
-    }
+    },
+    {
+      "name": "Launch file",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${file}"
+    },
+
   ]
 }

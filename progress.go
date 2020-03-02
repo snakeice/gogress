@@ -40,7 +40,7 @@ type Progress struct {
 	writer     *writer.Writer
 	Width      int
 	ForceWidth bool
-	Format     *format.ProgressFormat
+	Format     format.ProgressFormat
 	Units      format.Units
 
 	startTime  time.Time

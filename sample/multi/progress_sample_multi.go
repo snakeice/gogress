@@ -21,7 +21,7 @@ func main() {
 		bar := pool.NewBar(TOTAL)
 		bar.ShowElapsedTime = true
 		bar.ShowTimeLeft = true
-		bar.ShowSpeed = true
+		bar.ShowCounters = true
 		return bar
 	}
 
@@ -36,21 +36,19 @@ func main() {
 		bar.Prefix(name)
 		var li = i
 		go func() {
+			other := newBar()
 			defer wg.Done()
 			rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 			max := 100 * time.Millisecond
-			other := newBar()
 			other.Prefix(fmt.Sprintf("Other %d", li))
 			for bar.GetCurrent() < TOTAL {
 				bar.Prefix(fmt.Sprintf(name, rng.Intn(3)))
 				time.Sleep(time.Duration(rng.Intn(10)+1) * max / 10)
-				// since ewma decorator is used, we need to pass time.Since(start)
 				bar.Add(rng.Intn(3))
 			}
 			wg.Add(1)
 			for other.GetCurrent() < TOTAL {
 				time.Sleep(time.Duration(rng.Intn(10)+1) * max / 10)
-				// since ewma decorator is used, we need to pass time.Since(start)
 				other.Add(rng.Intn(3))
 			}
 			wg.Done()

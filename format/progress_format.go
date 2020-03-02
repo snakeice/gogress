@@ -25,7 +25,7 @@ func (pf *ProgressFormat) String() string {
 
 }
 
-var DefaultFormat = &ProgressFormat{
+var DefaultFormat = ProgressFormat{
 	BoxStart:  "[",
 	BoxEnd:    "]",
 	Empty:     " ",
