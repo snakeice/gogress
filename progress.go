@@ -27,14 +27,9 @@ type Progress struct {
 
 	RefreshRate time.Duration
 
-	messagePrefix   string
-	ShowElapsedTime bool
-	ShowCounters    bool
-	ShowSpeed       bool
-	ShowTimeLeft    bool
+	messagePrefix string
 
-	UnitsWidth   int
-	TimeBoxWidth int
+	UnitsWidth int
 
 	Output     io.Writer
 	writer     *writer.Writer
@@ -51,9 +46,10 @@ type Progress struct {
 	finish           chan struct{}
 	isFinish         bool
 	pooled           bool
+	frameCount       int64
 
-	mu  sync.Mutex
-	ctx *printerContext
+	mu          sync.Mutex
+	frameParser *TemplateParser
 }
 
 func NewDef() *Progress {
@@ -66,15 +62,11 @@ func New(max int) *Progress {
 
 func newBar() *Progress {
 	bar := &Progress{
-		finish:          make(chan struct{}),
-		RefreshRate:     defaultRefreshRate,
-		Format:          format.DefaultFormat,
-		ShowElapsedTime: false,
-		ShowCounters:    false,
-		ShowSpeed:       false,
-		ShowTimeLeft:    false,
-		Units:           format.U_NO,
-		pooled:          false,
+		finish:      make(chan struct{}),
+		RefreshRate: defaultRefreshRate,
+		Format:      format.DefaultFormat,
+		Units:       format.U_NO,
+		pooled:      false,
 	}
 
 	return bar
@@ -90,7 +82,7 @@ func New64(max int64) *Progress {
 
 func (p *Progress) setWriter(writer *writer.Writer) {
 	p.writer = writer
-	p.ctx = newPrintContex(p, p.max, p.current)
+	p.frameParser = NewTemplateParserEmpty()
 }
 
 func (p *Progress) GetCurrent() int64 {
@@ -153,7 +145,7 @@ func (p *Progress) SetWidth(width int) *Progress {
 func (p *Progress) String() string {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	return p.ctx.String()
+	return p.frameParser.Last()
 }
 
 func (p *Progress) GetWidth() int {
@@ -163,31 +155,28 @@ func (p *Progress) GetWidth() int {
 
 	width := p.Width
 	termWidth, _ := p.writer.GetWidth()
-	if width == 0 || termWidth <= width {
+	if width == 0 || termWidth != width {
 		width = termWidth
 	}
-
+	p.Width = width
 	return width
 }
 
 func (p *Progress) write(total, current int64) {
+	p.Width = p.GetWidth()
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	isFinish := p.isFinish
+	atomic.AddInt64(&p.frameCount, 1)
+	frame := NewFrame(p, current, total, p.Width, p.frameCount)
 
 	if !isFinish {
-		p.ctx.
-			Update(total, current).
-			Feed()
+		p.frameParser.UpdateFrame(frame)
 	} else {
-		p.finishOnceUpdate.Do(func() {
-			p.ctx.
-				Update(total, current).
-				Feed()
-		})
+		p.frameParser.UpdateFrame(frame)
 	}
 
-	toPrint := append([]byte(p.ctx.String()), '\n')
+	toPrint := append([]byte(p.frameParser.Last()), '\n')
 	switch {
 	case isFinish && !p.pooled:
 		return
@@ -246,7 +235,7 @@ func (p *Progress) Update() {
 	}
 	p.write(max, current)
 	if current == 0 {
-		// p.startTime = time.Now()
+		//		p.startTime = time.Now()
 		p.startValue = 0
 	} else if current >= max && !p.isFinish {
 		p.Finish()
@@ -282,7 +271,6 @@ func (p *Progress) Start() *Progress {
 	p.startTime = time.Now()
 	p.startValue = atomic.LoadInt64(&p.current)
 	if atomic.LoadInt64(&p.max) == 0 {
-		p.ShowTimeLeft = false
 	}
 	if !p.pooled {
 		p.Update()

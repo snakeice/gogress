@@ -11,7 +11,7 @@ import (
 
 const (
 	TOTAL = 100
-	BARS  = 5
+	BARS  = 6
 )
 
 func main() {
@@ -19,9 +19,6 @@ func main() {
 
 	newBar := func() *gogress.Progress {
 		bar := pool.NewBar(TOTAL)
-		bar.ShowElapsedTime = true
-		bar.ShowTimeLeft = true
-		bar.ShowCounters = true
 		return bar
 	}
 
@@ -37,6 +34,7 @@ func main() {
 		var li = i
 		go func() {
 			other := newBar()
+			other.SetMax(100000)
 			defer wg.Done()
 			rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 			max := 100 * time.Millisecond
@@ -47,7 +45,7 @@ func main() {
 				bar.Add(rng.Intn(3))
 			}
 			wg.Add(1)
-			for other.GetCurrent() < TOTAL {
+			for other.GetCurrent() < 100000 {
 				time.Sleep(time.Duration(rng.Intn(10)+1) * max / 10)
 				other.Add(rng.Intn(3))
 			}

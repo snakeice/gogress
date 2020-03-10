@@ -13,7 +13,7 @@ func NewPool() *Pool {
 		bars:        []*Progress{},
 		finish:      make(chan struct{}),
 		isRunning:   false,
-		RefreshRate: time.Millisecond * 200,
+		RefreshRate: time.Second / 20,
 		writer:      writer.New(os.Stdout),
 	}
 }
