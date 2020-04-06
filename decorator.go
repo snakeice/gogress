@@ -2,7 +2,6 @@ package gogress
 
 import (
 	"math/rand"
-	"strings"
 	"text/template"
 
 	"github.com/fatih/color"
@@ -10,8 +9,13 @@ import (
 
 type Decorator func(frame *FrameContext, cols int) string
 
+const (
+	adElPlaceholder    = "%_ad_el_%"
+	adElPlaceholderLen = len(adElPlaceholder)
+)
+
 var Decorators = template.FuncMap{
-	"bar":       wrapDecorator(bar),
+	"bar":       adaptativeDecorator(bar),
 	"prefix":    wrapDecorator(prefix),
 	"counter":   wrapDecorator(counter),
 	"timeSpent": wrapDecorator(timeSpent),
@@ -45,6 +49,7 @@ func getColWidth(total int) int {
 
 func wrapDecorator(decorator Decorator) Decorator {
 	return Decorator(func(frame *FrameContext, colsGrid int) string {
+		frame.Width -= 1 // line break
 		frame.elementNo += 1
 		cols := getColWidth(frame.Width) * colsGrid
 		frame.usedWidth += cols
@@ -52,8 +57,15 @@ func wrapDecorator(decorator Decorator) Decorator {
 		if len(response) >= cols {
 			return response[:cols]
 		} else {
-			return response + strings.Repeat(" ", cols-len(response))
+			return response // + strings.Repeat(" ", cols-len(response))
 		}
+	})
+}
+
+func adaptativeDecorator(decorator Decorator) Decorator {
+	return Decorator(func(frame *FrameContext, cols int) string {
+		frame.recalc = append(frame.recalc, decorator)
+		return adElPlaceholder
 	})
 }
 

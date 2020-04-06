@@ -2,21 +2,12 @@ package gogress
 
 import (
 	"bytes"
+	"strings"
 	"sync/atomic"
 	"text/template"
 )
 
-const DefaultTemplate = `{{spin . 1}}{{prefix . 2}}{{bar . 3}}{{percent . 1}}{{counter . 1}}{{speed . 1}}{{timeSpent . 1}}{{timeLeft . 1}}{{frameNo . 1}}`
-
-/*
-	"bar":       bar,
-	"prefix":    prefix,
-	"counter":   counter,
-	"timeSpent": timeSpent,
-	"speed":     speed,
-	"percent":   percent,
-	"timeLeft":  timeLeft,
-*/
+const DefaultTemplate = `{{prefix . 2 }} {{bar . 5}} {{percent . 1}} {{counter . 1}} {{speed . 1}} {{timeSpent . 1}} {{timeLeft . 1}}`
 
 /*
  +-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----+
@@ -29,7 +20,6 @@ type TemplateParser struct {
 	template    *template.Template
 	lastContext *FrameContext
 	frameNo     int64
-	width       int
 	lastFrame   string
 }
 
@@ -54,13 +44,14 @@ func (tp *TemplateParser) Last() string {
 }
 
 func (tp *TemplateParser) UpdateFrame(frame *FrameContext) {
-	if frame.Bar.isFinish && frame.Width != tp.width {
-		if tp.lastContext == nil {
-			tp.lastContext.Width = tp.width
-			tp.parseContext(tp.lastContext)
+	if frame.IsFinish {
+		if frame.Width != tp.lastContext.Width {
+			atomic.AddInt64(&tp.frameNo, 1)
+			tp.lastContext.Width = frame.Width
+			tp.parseContext(frame)
 		}
-
 	} else {
+		atomic.AddInt64(&tp.frameNo, 1)
 		tp.parseContext(frame)
 	}
 }
@@ -73,12 +64,27 @@ func (tp *TemplateParser) UpdateTemplate(templateString string) error {
 }
 
 func (tp *TemplateParser) parseContext(frame *FrameContext) {
-	atomic.AddInt64(&tp.frameNo, 1)
-	tp.lastContext = frame
+	tp.lastContext = frame.Copy()
 	var tpl bytes.Buffer
 	if err := tp.template.Execute(&tpl, frame); err != nil {
 		tp.lastFrame = err.Error()
 	} else {
 		tp.lastFrame = tpl.String()
+
+		toRecalc := len(frame.recalc)
+		if toRecalc == 0 {
+			return
+		}
+		staticWidth := len(tp.lastFrame) - (toRecalc * adElPlaceholderLen)
+
+		if frame.Width-staticWidth <= 0 {
+			tp.lastFrame = strings.Replace(tp.lastFrame, adElPlaceholder, "", -1)
+			//tp.lastFrame = StripString(tp.lastFrame, frame.Width)
+		} else {
+			max := (frame.Width - staticWidth) / toRecalc
+			for _, element := range frame.recalc {
+				tp.lastFrame = strings.Replace(tp.lastFrame, adElPlaceholder, element(frame, max), 1)
+			}
+		}
 	}
 }

@@ -34,23 +34,25 @@ func main() {
 		var li = i
 		go func() {
 			other := newBar()
-			other.SetMax(100000)
+			other.SetMax(TOTAL)
 			defer wg.Done()
 			rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 			max := 100 * time.Millisecond
 			other.Prefix(fmt.Sprintf("Other %d", li))
+			go func() {
+				wg.Add(1)
+				for other.GetCurrent() < TOTAL {
+					time.Sleep(time.Duration(rng.Intn(10)+1) * max / 10)
+					other.Add(rng.Intn(3))
+				}
+				wg.Done()
+			}()
+
 			for bar.GetCurrent() < TOTAL {
 				bar.Prefix(fmt.Sprintf(name, rng.Intn(3)))
 				time.Sleep(time.Duration(rng.Intn(10)+1) * max / 10)
 				bar.Add(rng.Intn(3))
 			}
-			wg.Add(1)
-			for other.GetCurrent() < 100000 {
-				time.Sleep(time.Duration(rng.Intn(10)+1) * max / 10)
-				other.Add(rng.Intn(3))
-			}
-			wg.Done()
-
 		}()
 	}
 

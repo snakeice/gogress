@@ -15,6 +15,7 @@ import (
 
 const (
 	defaultRefreshRate = time.Second / 120
+	defaultMax         = 100
 )
 
 type Progress struct {
@@ -38,22 +39,22 @@ type Progress struct {
 	Format     format.ProgressFormat
 	Units      format.Units
 
-	startTime  time.Time
-	changeTime time.Time
+	startTime    time.Time
+	changeTime   time.Time
+	finishedTime time.Time
 
-	finishOnce       sync.Once
-	finishOnceUpdate sync.Once
-	finish           chan struct{}
-	isFinish         bool
-	pooled           bool
-	frameCount       int64
+	finishOnce sync.Once
+	finish     chan struct{}
+	isFinish   bool
+	pooled     bool
+	frameCount int64
 
 	mu          sync.Mutex
 	frameParser *TemplateParser
 }
 
 func NewDef() *Progress {
-	return New(100)
+	return New(defaultMax)
 }
 
 func New(max int) *Progress {
@@ -205,6 +206,7 @@ func (p *Progress) Finish() {
 			fmt.Println()
 		}
 		p.isFinish = true
+		p.finishedTime = time.Now()
 	})
 }
 
@@ -235,7 +237,7 @@ func (p *Progress) Update() {
 	}
 	p.write(max, current)
 	if current == 0 {
-		//		p.startTime = time.Now()
+		p.startTime = time.Now()
 		p.startValue = 0
 	} else if current >= max && !p.isFinish {
 		p.Finish()
@@ -271,6 +273,7 @@ func (p *Progress) Start() *Progress {
 	p.startTime = time.Now()
 	p.startValue = atomic.LoadInt64(&p.current)
 	if atomic.LoadInt64(&p.max) == 0 {
+		p.SetMax(defaultMax)
 	}
 	if !p.pooled {
 		p.Update()
