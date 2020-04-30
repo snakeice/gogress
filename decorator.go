@@ -57,7 +57,7 @@ func wrapDecorator(decorator Decorator) Decorator {
 		if len(response) >= cols {
 			return response[:cols]
 		} else {
-			return response // + strings.Repeat(" ", cols-len(response))
+			return response
 		}
 	})
 }
@@ -74,6 +74,6 @@ func RemoveDecorator(name string) {
 }
 
 func rndcolor(s string) string {
-	c := rand.Intn(int(color.FgWhite-color.FgBlack)) + int(color.FgBlack)
+	c := rand.Intn(int(color.FgWhite-color.FgBlack)) + int(color.FgBlack) - 1
 	return color.New(color.Attribute(c)).Sprint(s)
 }

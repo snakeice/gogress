@@ -39,12 +39,13 @@ func main() {
 			rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 			max := 100 * time.Millisecond
 			other.Prefix(fmt.Sprintf("Other %d", li))
+			wg.Add(1)
 			go func() {
-				wg.Add(1)
 				for other.GetCurrent() < TOTAL {
 					time.Sleep(time.Duration(rng.Intn(10)+1) * max / 10)
 					other.Add(rng.Intn(3))
 				}
+				pool.RemoveBar(other)
 				wg.Done()
 			}()
 

@@ -29,11 +29,31 @@ type Pool struct {
 }
 
 func (p *Pool) AddBar(bar *Progress) int {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.bars = append(p.bars, bar)
 	bar.setWriter(p.writer)
 	bar.pooled = true
 	if p.isRunning {
 		bar.Start()
+	}
+	for id, _bar := range p.bars {
+		_bar.ID = id
+	}
+
+	return len(p.bars) - 1
+}
+
+func remove(slice []*Progress, id int) []*Progress {
+	return append(slice[:id], slice[id+1:]...)
+}
+
+func (p *Pool) RemoveBar(bar *Progress) int {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.bars = remove(p.bars, bar.ID)
+	for id, _bar := range p.bars {
+		_bar.ID = id
 	}
 	return len(p.bars) - 1
 }

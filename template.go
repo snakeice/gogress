@@ -7,7 +7,7 @@ import (
 	"text/template"
 )
 
-const DefaultTemplate = `{{prefix . 2 }} {{bar . 5}} {{percent . 1}} {{counter . 1}} {{speed . 1}} {{timeSpent . 1}} {{timeLeft . 1}}`
+const DefaultTemplate = `{{prefix . 2}} {{bar . 5}} {{percent . 1}} {{counter . 1}} {{speed . 1}} {{timeSpent . 1}} {{timeLeft . 1}}`
 
 /*
  +-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----+

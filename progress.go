@@ -19,7 +19,7 @@ const (
 )
 
 type Progress struct {
-	ID string
+	ID int
 
 	max        int64
 	current    int64
@@ -280,4 +280,14 @@ func (p *Progress) Start() *Progress {
 		go p.refresher()
 	}
 	return p
+}
+
+func (pb *Progress) NewProxyReader(r io.Reader) *Reader {
+	pb.Units = format.U_BYTES
+	return &Reader{r, pb}
+}
+
+func (pb *Progress) NewProxyWriter(r io.Writer) *Writer {
+	pb.Units = format.U_BYTES
+	return &Writer{r, pb}
 }
