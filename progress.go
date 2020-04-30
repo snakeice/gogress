@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultRefreshRate = time.Second / 120
+	defaultRefreshRate = time.Second / 60
 	defaultMax         = 100
 )
 
@@ -262,6 +262,7 @@ func (p *Progress) refresher() {
 	for {
 		select {
 		case <-p.finish:
+			p.Update()
 			return
 		case <-time.After(p.RefreshRate):
 			p.Update()

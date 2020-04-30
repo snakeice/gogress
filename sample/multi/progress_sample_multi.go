@@ -16,6 +16,7 @@ const (
 
 func main() {
 	pool := gogress.NewPool()
+	pool.RefreshRate = time.Second / 30
 
 	newBar := func() *gogress.Progress {
 		bar := pool.NewBar(TOTAL)
