@@ -1,6 +1,7 @@
 package gogress
 
 import (
+	"context"
 	"os"
 	"sync"
 	"time"
@@ -9,9 +10,11 @@ import (
 )
 
 func NewPool() *Pool {
+	ctx, fn := context.WithCancel(context.Background())
 	return &Pool{
 		bars:        []*Progress{},
-		finish:      make(chan struct{}),
+		ctx:         ctx,
+		stopFn:      fn,
 		isRunning:   false,
 		RefreshRate: time.Second / 45,
 		writer:      writer.New(os.Stdout),
@@ -20,7 +23,8 @@ func NewPool() *Pool {
 
 type Pool struct {
 	bars        []*Progress
-	finish      chan struct{}
+	ctx         context.Context
+	stopFn      context.CancelFunc
 	RefreshRate time.Duration
 	writer      *writer.Writer
 	isRunning   bool
@@ -77,7 +81,7 @@ func (p *Pool) NewBar64(max int64) *Progress {
 func (p *Pool) refresher() {
 	for {
 		select {
-		case <-p.finish:
+		case <-p.ctx.Done():
 			p.isRunning = false
 			return
 		case <-time.After(p.RefreshRate):
@@ -110,11 +114,12 @@ func (p *Pool) Update() {
 
 func (p *Pool) FinishAll() {
 	p.finishOnce.Do(func() {
-		close(p.finish)
+		p.stopFn()
 
 		for _, bar := range p.bars {
 			bar.Finish()
 		}
+
 		p.mu.Lock()
 		defer p.mu.Unlock()
 		p.Update()

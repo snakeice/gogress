@@ -44,12 +44,10 @@ func (tp *TemplateParser) Last() string {
 }
 
 func (tp *TemplateParser) UpdateFrame(frame *FrameContext) {
-	if frame.IsFinish {
-		if frame.Width != tp.lastContext.Width {
-			atomic.AddInt64(&tp.frameNo, 1)
-			tp.lastContext.Width = frame.Width
-			tp.parseContext(frame)
-		}
+	if tp.lastContext != nil && frame.Width != tp.lastContext.Width {
+		atomic.AddInt64(&tp.frameNo, 1)
+		tp.lastContext.Width = frame.Width
+		tp.parseContext(frame)
 	} else {
 		atomic.AddInt64(&tp.frameNo, 1)
 		tp.parseContext(frame)

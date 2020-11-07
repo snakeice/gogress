@@ -1,6 +1,7 @@
 package gogress
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -44,7 +45,8 @@ type Progress struct {
 	finishedTime time.Time
 
 	finishOnce sync.Once
-	finish     chan struct{}
+	ctx        context.Context
+	stopFn     context.CancelFunc
 	isFinish   bool
 	pooled     bool
 	frameCount int64
@@ -62,8 +64,10 @@ func New(max int) *Progress {
 }
 
 func newBar() *Progress {
+	ctx, fn := context.WithCancel(context.Background())
 	bar := &Progress{
-		finish:      make(chan struct{}),
+		ctx:         ctx,
+		stopFn:      fn,
 		RefreshRate: defaultRefreshRate,
 		Format:      format.DefaultFormat,
 		Units:       format.U_NO,
@@ -171,11 +175,7 @@ func (p *Progress) write(total, current int64) {
 	atomic.AddInt64(&p.frameCount, 1)
 	frame := NewFrame(p, current, total, p.Width, p.frameCount)
 
-	if !isFinish {
-		p.frameParser.UpdateFrame(frame)
-	} else {
-		p.frameParser.UpdateFrame(frame)
-	}
+	p.frameParser.UpdateFrame(frame)
 
 	toPrint := append([]byte(p.frameParser.Last()), '\n')
 	switch {
@@ -193,7 +193,7 @@ func (p *Progress) write(total, current int64) {
 
 func (p *Progress) Finish() {
 	p.finishOnce.Do(func() {
-		close(p.finish)
+		p.stopFn()
 		if !p.pooled {
 			p.write(atomic.LoadInt64(&p.max), atomic.LoadInt64(&p.current))
 		}
@@ -240,7 +240,7 @@ func (p *Progress) Update() {
 		p.startTime = time.Now()
 		p.startValue = 0
 	} else if current >= max && !p.isFinish {
-		p.Finish()
+		p.stopFn()
 	}
 }
 
@@ -261,7 +261,7 @@ func (p *Progress) Reset64(max int64) *Progress {
 func (p *Progress) refresher() {
 	for {
 		select {
-		case <-p.finish:
+		case <-p.ctx.Done():
 			p.Update()
 			return
 		case <-time.After(p.RefreshRate):

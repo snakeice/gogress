@@ -134,7 +134,7 @@ func timeLeft(frame *FrameContext, cols int) string {
 	var left time.Duration
 	var timeLeftBox string
 	select {
-	case <-frame.bar.finish:
+	case <-frame.bar.ctx.Done():
 	default:
 		if currentFromStart > 0 {
 			perEntry := fromChange / time.Duration(currentFromStart)
