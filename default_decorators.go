@@ -13,9 +13,10 @@ import (
 func bar(frame *FrameContext, cols int) string {
 	var bar string
 	cols -= len(frame.Format().BoxStart) + len(frame.Format().BoxEnd)
-	if cols <= 0 {
+	switch {
+	case cols <= 0:
 		bar = ""
-	} else if frame.Max > 0 {
+	case frame.Max > 0:
 		decPercent := float64(frame.Current) / float64(frame.Max)
 		doneSize := int(math.Ceil(decPercent * float64(cols)))
 		emptySize := cols - doneSize
@@ -43,7 +44,8 @@ func bar(frame *FrameContext, cols int) string {
 		emptyLen := format.EscapeAwareRuneCountInString(frame.Format().Empty)
 		bar += strings.Repeat(frame.Format().Empty, emptySize/emptyLen)
 		bar += frame.Format().BoxEnd
-	} else {
+
+	default:
 		pos := cols - int(frame.Current)%int(cols)
 		bar += frame.Format().BoxStart
 		if pos-1 > 0 {
@@ -55,6 +57,7 @@ func bar(frame *FrameContext, cols int) string {
 		}
 		bar += frame.Format().BoxEnd
 	}
+
 	return bar
 }
 

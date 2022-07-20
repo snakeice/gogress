@@ -76,8 +76,7 @@ func (tp *TemplateParser) parseContext(frame *FrameContext) {
 		staticWidth := len(tp.lastFrame) - (toRecalc * adElPlaceholderLen)
 
 		if frame.Width-staticWidth <= 0 {
-			tp.lastFrame = strings.Replace(tp.lastFrame, adElPlaceholder, "", -1)
-			//tp.lastFrame = StripString(tp.lastFrame, frame.Width)
+			tp.lastFrame = strings.ReplaceAll(tp.lastFrame, adElPlaceholder, "")
 		} else {
 			max := (frame.Width - staticWidth) / toRecalc
 			for _, element := range frame.recalc {

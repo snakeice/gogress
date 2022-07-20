@@ -293,10 +293,10 @@ func (pb *Progress) NewProxyWriter(r io.Writer) *Writer {
 	return &Writer{r, pb}
 }
 
-func (pb *Progress) SetTemplate(template string) {
-	pb.frameParser.UpdateTemplate(template)
+func (pb *Progress) SetTemplate(template string) error {
+	return pb.frameParser.UpdateTemplate(template)
 }
 
-func (pb *Progress) ResetTemplate() {
-	pb.frameParser.UpdateTemplate(DefaultTemplate)
+func (pb *Progress) ResetTemplate() error {
+	return pb.frameParser.UpdateTemplate(DefaultTemplate)
 }

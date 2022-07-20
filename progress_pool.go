@@ -137,3 +137,9 @@ func (p *Pool) IsFinished() bool {
 	}
 	return result
 }
+
+func (p *Pool) Wait() {
+	for !p.IsFinished() {
+		time.Sleep(time.Millisecond * 100)
+	}
+}
