@@ -19,7 +19,7 @@ func main() {
 		SpinString: "\\|/-",
 	}
 
-	template := `{{prefix . 2 | green }} {{spin . 1 | rndcolor }}  {{percent . 1 | cyan }} {{counter . 1 | red }} {{speed . 1 | blue}}`
+	template := `{{prefix . 2 | green }} {{spin . 1 | rndcolor }}  {{percent . 1 | cyan }} {{counter . 1 | red }} {{speed . 1 | blue}} {{ frameNo . 1}}`
 
 	bar := gogress.New(TOTAL)
 

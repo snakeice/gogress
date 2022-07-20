@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	defaultRefreshRate = time.Second / 60
+	defaultRefreshRate = time.Second / 30
 	defaultMax         = 100
 )
 
