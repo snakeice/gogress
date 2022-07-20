@@ -7,19 +7,19 @@ import (
 	"github.com/snakeice/gogress/format"
 )
 
-const TOTAL = 500
+const TOTAL = 100
 
 func main() {
 	barFormat := format.ProgressFormat{
-		BoxStart:   "|",
-		BoxEnd:     "|",
-		Empty:      "_",
-		Current:    ">",
-		Completed:  "-",
-		SpinString: "\\|/-",
+		BoxStart:  "|",
+		BoxEnd:    "|",
+		Empty:     "_",
+		Current:   ">",
+		Completed: "-",
+		Spin:      []rune{'⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'},
 	}
 
-	template := `{{prefix . 2 | green }} {{spin . 1 | rndcolor }}  {{percent . 1 | cyan }} {{counter . 1 | red }} {{speed . 1 | blue}} {{ frameNo . 1}}`
+	template := `{{prefix . 2 | green }} {{spin . 2 | yellow }} {{bar . -1 | rndcolor }} {{percent . 1 | cyan }} {{counter . 1 | red }} {{speed . 1 | blue}}`
 
 	bar := gogress.New(TOTAL)
 
@@ -28,13 +28,12 @@ func main() {
 	}
 
 	bar.Format = barFormat
-	bar.Prefix("Processing")
+	bar.Prefix("Downloading life")
 
 	bar.Start()
-	bar.Prefix("Downloading life")
 	for i := 1; i <= TOTAL; i++ {
 		bar.Inc()
-		time.Sleep(time.Second / 120)
+		time.Sleep(time.Second / 60)
 	}
 	bar.FinishPrint("All Solved")
 }

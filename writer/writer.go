@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 var cuuAndEd = fmt.Sprintf("%c[%%dA%[1]c[J", 27)
@@ -26,14 +26,14 @@ func New(out io.Writer) *Writer {
 	writer.out = out
 	if f, ok := out.(*os.File); ok {
 		writer.fd = f.Fd()
-		writer.isTerminal = terminal.IsTerminal(int(writer.fd))
+		writer.isTerminal = term.IsTerminal(int(writer.fd))
 	}
 	return writer
 }
 
 func (w *Writer) GetWidth() (int, error) {
 	if w.isTerminal {
-		width, _, err := terminal.GetSize(int(w.fd))
+		width, _, err := term.GetSize(int(w.fd))
 		return width, err
 	}
 	return 0, notTTY

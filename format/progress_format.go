@@ -9,12 +9,12 @@ import (
 )
 
 type ProgressFormat struct {
-	BoxStart   string
-	BoxEnd     string
-	Empty      string
-	Current    string
-	Completed  string
-	SpinString string
+	BoxStart  string
+	BoxEnd    string
+	Empty     string
+	Current   string
+	Completed string
+	Spin      []rune
 }
 
 func (pf *ProgressFormat) String() string {
@@ -27,12 +27,12 @@ func (pf *ProgressFormat) String() string {
 }
 
 var DefaultFormat = ProgressFormat{
-	BoxStart:   "[",
-	BoxEnd:     "]",
-	Empty:      " ",
-	Current:    ">",
-	Completed:  "=",
-	SpinString: "\\|/-",
+	BoxStart:  "[",
+	BoxEnd:    "]",
+	Empty:     " ",
+	Current:   ">",
+	Completed: "=",
+	Spin:      []rune{'\\', '|', '/', '-'},
 }
 
 type Units int

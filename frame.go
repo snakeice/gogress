@@ -19,10 +19,6 @@ func (f *FrameContext) Format() *format.ProgressFormat {
 	return &f.bar.Format
 }
 
-func (f *FrameContext) SpinString() string {
-	return f.bar.Format.SpinString
-}
-
 func (f *FrameContext) FrameNo() int64 {
 	return f.frameNo
 }

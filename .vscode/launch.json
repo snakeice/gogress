@@ -8,6 +8,7 @@
       "name": "Sample multi",
       "type": "go",
       "request": "launch",
+      "console": "integratedTerminal",
       "mode": "auto",
       "program": "${workspaceFolder}/sample/multi/progress_sample_multi.go",
       "env": {},
@@ -17,8 +18,19 @@
       "name": "Sample simple",
       "type": "go",
       "request": "launch",
+      "console": "integratedTerminal",
       "mode": "auto",
       "program": "${workspaceFolder}/sample/simple/progress_sample.go",
+      "env": {},
+      "args": []
+    },
+    {
+      "name": "Sample decorator",
+      "type": "go",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "mode": "auto",
+      "program": "${workspaceFolder}/sample/decorator/sample_decorator.go",
       "env": {},
       "args": []
     },
@@ -26,6 +38,7 @@
       "name": "Launch file",
       "type": "go",
       "request": "launch",
+      "console": "integratedTerminal",
       "mode": "debug",
       "program": "${file}"
     },

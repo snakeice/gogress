@@ -154,13 +154,17 @@ func timeLeft(frame *FrameContext, cols int) string {
 	return timeLeftBox
 }
 
-func getSpinString(frame *FrameContext) string {
-	return frame.Format().SpinString
-}
-
 func spin(frame *FrameContext, cols int) string {
-	char := getSpinString(frame)[frame.frameNo%int64(len(getSpinString(frame)))]
-	return string(char)
+	spin := frame.Format().Spin
+
+	spinLen := len(spin)
+
+	if spinLen == 0 {
+		return " "
+	}
+	part := frame.frameNo % int64(spinLen)
+
+	return string(spin[part])
 }
 
 func frameNo(frame *FrameContext, cols int) string {

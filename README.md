@@ -1,6 +1,5 @@
 # gogress
 
-![Go](https://github.com/snakeice/gogress/workflows/Go/badge.svg?branch=master)
 
 Simple terminal progress bar with Go.
 
