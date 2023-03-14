@@ -30,6 +30,6 @@
           args:
             - "--go=1.19"
         - id: go-critic
-        # - id: go-unit-tests
+        - id: go-unit-tests
         - id: go-build
         - id: go-mod-tidy
